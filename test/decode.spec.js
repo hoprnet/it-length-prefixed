@@ -7,7 +7,7 @@ const randomInt = require('random-int')
 const randomBytes = require('random-bytes')
 const { map, collect } = require('streaming-iterables')
 const Varint = require('varint')
-const BufferList = require('bl')
+const BufferList = require('bl/BufferList')
 const defer = require('p-defer')
 
 const lp = require('../')
