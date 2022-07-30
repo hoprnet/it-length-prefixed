@@ -27,8 +27,21 @@ export function encode (options?: EncoderOptions): Transform<Uint8ArrayList | Ui
   const encoder = async function * (source: Source<Uint8ArrayList | Uint8Array>): Source<Uint8Array> {
     for await (const chunk of source) {
       // length + data
-      yield encodeLength(chunk.byteLength).subarray()
-      yield chunk
+      const length = encodeLength(chunk.byteLength)
+
+      // yield only Uint8Arrays
+      if (length instanceof Uint8Array) {
+        yield length
+      } else {
+        yield * length
+      }
+
+      // yield only Uint8Arrays
+      if (chunk instanceof Uint8Array) {
+        yield chunk
+      } else {
+        yield * chunk
+      }
     }
   }
 
