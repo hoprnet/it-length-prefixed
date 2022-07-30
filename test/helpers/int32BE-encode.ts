@@ -1,9 +1,10 @@
 import { Uint8ArrayList } from 'uint8arraylist'
+import { allocUnsafe } from '../../src/alloc.js'
 import type { LengthEncoderFunction } from '../../src/index.js'
 
 export const int32BEEncode: LengthEncoderFunction = (value) => {
   const data = new Uint8ArrayList(
-    new Uint8Array(4)
+    allocUnsafe(4)
   )
   data.setInt32(0, value, false)
 
