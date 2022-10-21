@@ -13,27 +13,24 @@ interface EncoderOptions {
 export const MIN_POOL_SIZE = 8 // Varint.encode(Number.MAX_SAFE_INTEGER).length
 export const DEFAULT_POOL_SIZE = 10 * 1024
 
+const ZEROs = Uint8Array.from([0,0,0,0,0,0,0,0])
+
 export function encode (options?: EncoderOptions): Transform<Uint8ArrayList | Uint8Array, Uint8Array> {
   options = options ?? {}
 
-  const poolSize = Math.max(options.poolSize ?? DEFAULT_POOL_SIZE, options.minPoolSize ?? MIN_POOL_SIZE)
   const encodeLength = options.lengthEncoder ?? varintEncode
 
   const encoder = async function * (source: Source<Uint8ArrayList | Uint8Array>): Source<Uint8Array> {
-    let pool = new Uint8Array(poolSize)
-    let poolOffset = 0
+    let pool = new Uint8Array(MIN_POOL_SIZE)
 
     for await (const chunk of source) {
-      encodeLength(chunk.length, pool, poolOffset)
-      const encodedLength = pool.slice(poolOffset, poolOffset + encodeLength.bytes)
-      poolOffset += encodeLength.bytes
-
-      if (pool.length - poolOffset < MIN_POOL_SIZE) {
-        pool = new Uint8Array(poolSize)
-        poolOffset = 0
-      }
+      encodeLength(chunk.length, pool, 0)
+      const encodedLength = pool.slice(0, encodeLength.bytes)
 
       yield uint8ArrayConcat([encodedLength, chunk.slice()], encodedLength.length + chunk.length)
+
+      // overwrite "pool"
+      pool.set(ZEROs)
     }
   }
 
